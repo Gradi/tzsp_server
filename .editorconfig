@@ -1,0 +1,13 @@
+[**]
+indent_style = space
+trim_trailing_whitespace = true
+charset = utf-8
+
+[**.cs]
+indent_size = 4
+
+[**.csproj]
+indent_size = 2
+
+[Directory.Build.props]
+indent_size = 2
