@@ -29,5 +29,8 @@ namespace TzspServer
 
         [Option("timeout", HelpText = "Timeout of socket in miliseconds", Default = 5000)]
         public int Timeout { get; set; }
+
+        [Option("queue-size", HelpText = "Size of the queue.", Default = 50000)]
+        public int QueueSize { get; set; }
     }
 }

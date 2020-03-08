@@ -15,20 +15,24 @@ namespace TzspServer
         private readonly ILogger _logger;
         private readonly IAnalyzer[] _analyzers;
 
-        private readonly ConcurrentQueue<Packet> _queue;
+        private readonly CircularBuffer<Packet> _queue;
         private readonly AutoResetEvent _newDataEvent;
         private readonly ManualResetEvent _stopEvent;
         private readonly Thread _workerThread;
         private ulong _counter;
 
-        public QueuedPacketProcessor(ILogger logger, IReadOnlyCollection<IAnalyzer> analyzers)
+        public QueuedPacketProcessor
+            (
+                ILogger logger,
+                IReadOnlyCollection<IAnalyzer> analyzers,
+                CommandLineArguments arguments)
         {
             _logger = logger.ForContext<QueuedPacketProcessor>();
             _analyzers = analyzers.ToArray();
             if (_analyzers.Length == 0)
                 _logger.Warning("No analyzers.");
 
-            _queue = new ConcurrentQueue<Packet>();
+            _queue = new CircularBuffer<Packet>(arguments.QueueSize);
             _newDataEvent = new AutoResetEvent(false);
             _stopEvent = new ManualResetEvent(false);
             _workerThread = new Thread(ThreadProc);
@@ -44,7 +48,7 @@ namespace TzspServer
             #endif
 
             var packet = new Packet(_counter++, DateTime.Now, bytes, length);
-            _queue.Enqueue(packet);
+            _queue.Add(packet);
             _newDataEvent.Set();
         }
 
@@ -55,7 +59,6 @@ namespace TzspServer
 
             _newDataEvent.Dispose();
             _stopEvent.Dispose();
-            _queue.Clear();
 
             foreach (var analyzer in _analyzers)
             {
@@ -79,7 +82,7 @@ namespace TzspServer
                 if (_stopEvent.WaitOne(0))
                     return;
 
-                while (_queue.TryDequeue(out var packet))
+                while (_queue.TryTake(out var packet) && !_stopEvent.WaitOne(0))
                 {
                     try
                     {

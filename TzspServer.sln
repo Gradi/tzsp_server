@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TzspServer", "TzspServer\Tz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TzspServerAnalyzerApi", "TzspServerAnalyzerApi\TzspServerAnalyzerApi.csproj", "{1F43712B-A9DF-4C8B-869B-E629EFEB4F00}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D0823F2-ABC7-48DD-86CA-722EBC010D38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTzspServer", "Tests\TestTzspServer\TestTzspServer.csproj", "{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,5 +38,16 @@ Global
 		{1F43712B-A9DF-4C8B-869B-E629EFEB4F00}.Release|x64.Build.0 = Release|x64
 		{1F43712B-A9DF-4C8B-869B-E629EFEB4F00}.Release|x86.ActiveCfg = Release|x86
 		{1F43712B-A9DF-4C8B-869B-E629EFEB4F00}.Release|x86.Build.0 = Release|x86
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Debug|x64.ActiveCfg = Debug|x64
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Debug|x64.Build.0 = Debug|x64
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Debug|x86.ActiveCfg = Debug|x86
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Debug|x86.Build.0 = Debug|x86
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Release|x64.ActiveCfg = Release|x64
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Release|x64.Build.0 = Release|x64
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Release|x86.ActiveCfg = Release|x86
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6E6FDC5E-E53B-49BF-83DE-E1A6380516AA} = {3D0823F2-ABC7-48DD-86CA-722EBC010D38}
 	EndGlobalSection
 EndGlobal
