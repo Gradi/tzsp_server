@@ -29,8 +29,7 @@ namespace TzspServer.Analyzers
 
             _locker = new object();
             _lastModTime = File.GetLastWriteTime(assemblyPath);
-            using var stream = File.OpenRead(assemblyPath);
-            _currentAnalyzer = new PluggableAnalyzer(stream);
+            _currentAnalyzer = new PluggableAnalyzer(assemblyPath);
             _currentAnalyzer.Logger = _logger;
             _isDisposed = false;
 
@@ -89,7 +88,7 @@ namespace TzspServer.Analyzers
                     _lastModTime = currentModTime;
 
                     using var stream = File.OpenRead(_assemblyPath);
-                    IAnalyzer newAnalyzer = new PluggableAnalyzer(stream);
+                    IAnalyzer newAnalyzer = new PluggableAnalyzer(_assemblyPath);
                     newAnalyzer.Logger = _logger;
                     IAnalyzer oldAnalyzer = null;
 

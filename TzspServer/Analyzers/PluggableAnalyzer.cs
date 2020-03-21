@@ -39,10 +39,12 @@ namespace TzspServer.Analyzers
             OwnApiName = asm.GetName().FullName;
         }
 
-        public PluggableAnalyzer(Stream assemblyStream)
+        public PluggableAnalyzer(string assemblyPath)
         {
             _asmContext = new AssemblyLoadContext(null, true);
-            var assembly = _asmContext.LoadFromStream(assemblyStream);
+            LoadOtherDllInTheSameDir(_asmContext, assemblyPath);
+            using var stream = File.OpenRead(assemblyPath);
+            var assembly = _asmContext.LoadFromStream(stream);
 
             var refApiName = assembly.GetReferencedAssemblies()
                 .FirstOrDefault(r => r.FullName == OwnApiName);
@@ -53,7 +55,7 @@ namespace TzspServer.Analyzers
 
             var analyzerTypes = assembly.GetCustomAttribute<AnalyzersOrderAttribute>()?.AnalyzerTypes;
             if (analyzerTypes == null || analyzerTypes.Count == 0)
-                throw new ArgumentException($"Assembly {assembly.GetName()} doesn't have {nameof(AnalyzersOrderAttribute)} or this collection is empty.");
+                throw new ArgumentException($"Assembly {assembly.GetName()} doesn't have {nameof(AnalyzersOrderAttribute)} or collection is empty.");
             if (analyzerTypes.Any(t => t.IsAbstract || !typeof(IAnalyzer).IsAssignableFrom(t)))
                 throw new ArgumentException($"Assembly's {nameof(AnalyzersOrderAttribute)} have entries that doesn't implement {nameof(IAnalyzer)} interface.");
 
@@ -99,6 +101,18 @@ namespace TzspServer.Analyzers
                 _analyzers = null;
                 _asmContext?.Unload();
                 _asmContext = null;
+            }
+        }
+
+        private static void LoadOtherDllInTheSameDir(AssemblyLoadContext context, string mainAsmPath)
+        {
+            foreach (var dllPath in Directory.EnumerateFiles(Path.GetDirectoryName(mainAsmPath), "*.dll"))
+            {
+                if (dllPath != mainAsmPath)
+                {
+                    using var stream = File.OpenRead(dllPath);
+                    context.LoadFromStream(stream);
+                }
             }
         }
     }
