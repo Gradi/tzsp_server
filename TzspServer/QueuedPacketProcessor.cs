@@ -109,7 +109,7 @@ namespace TzspServer
             catch(Exception exception)
             {
                 _logger.Error(exception, "Can't parse TZSP packet from {BytesHex}",
-                    packet.Data.AsHexLower(0, packet.Length));
+                    packet.Data.AsHexLower());
                 return;
             }
 

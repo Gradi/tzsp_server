@@ -32,54 +32,57 @@ namespace TzspServerAnalyzerApi.Extensions
         public static string AsHexLower(this byte[] bytes)
         {
             if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+            if (bytes.Length == 0)
                 return string.Empty;
-            return AsHexLower(bytes, 0, bytes.Length);
+
+            ReadOnlySpan<byte> span = bytes;
+            return AsHexLower(ref span);
         }
 
         public static string AsHexUpper(this byte[] bytes)
         {
             if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+            if (bytes.Length == 0)
                 return string.Empty;
-            return AsHexUpper(bytes, 0, bytes.Length);
+
+            ReadOnlySpan<byte> span = bytes;
+            return AsHexUpper(ref span);
         }
 
         public static string AsAsciiLetters(this byte[] bytes)
         {
             if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+            if (bytes.Length == 0)
                 return string.Empty;
-            return AsAsciiLetters(bytes, 0, bytes.Length);
+
+            ReadOnlySpan<byte> span = bytes;
+            return AsAsciiLetters(ref span);
         }
 
-        public static string AsHexLower(this byte[] bytes, int start, int length)
+        public static string AsHexLower(this ref ReadOnlySpan<byte> span)
         {
-            if (bytes == null || bytes.Length == 0)
-                return string.Empty;
-
-            var builder = new StringBuilder(length * 2);
-            for (int i = start; i < length; ++i)
-                builder.Append(_lowerHex[bytes[i]]);
+            var builder = new StringBuilder(span.Length * 2);
+            for (int i = 0; i < span.Length; ++i)
+                builder.Append(_lowerHex[span[i]]);
             return  builder.ToString();
         }
 
-        public static string AsHexUpper(this byte[] bytes, int start, int length)
+        public static string AsHexUpper(this ref ReadOnlySpan<byte> span)
         {
-            if (bytes == null || bytes.Length == 0)
-                return string.Empty;
-
-            var builder = new StringBuilder(length * 2);
-            for (int i = start; i < length; ++i)
-                builder.Append(_upperHex[bytes[i]]);
+            var builder = new StringBuilder(span.Length * 2);
+            for (int i = 0; i < span.Length; ++i)
+                builder.Append(_upperHex[span[i]]);
             return builder.ToString();
         }
 
-        public static string AsAsciiLetters(this byte[] bytes, int start, int length)
+        public static string AsAsciiLetters(this ref ReadOnlySpan<byte> span)
         {
-            if (bytes == null || bytes.Length == 0)
-                return string.Empty;
-
-            var builder = new StringBuilder(length);
-            for (int i = start; i < length; ++i)
-                builder.Append(_asciiLetters[bytes[i]]);
+            var builder = new StringBuilder(span.Length);
+            for (int i = 0; i < span.Length; ++i)
+                builder.Append(_asciiLetters[span[i]]);
             return builder.ToString();
         }
     }
