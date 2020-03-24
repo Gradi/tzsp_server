@@ -42,9 +42,7 @@ namespace TzspServer.Analyzers
         public PluggableAnalyzer(string assemblyPath)
         {
             _asmContext = new AssemblyLoadContext(null, true);
-            LoadOtherDllInTheSameDir(_asmContext, assemblyPath);
-            using var stream = File.OpenRead(assemblyPath);
-            var assembly = _asmContext.LoadFromStream(stream);
+            var assembly = LoadMainDllWithDeps(_asmContext, assemblyPath);
 
             var refApiName = assembly.GetReferencedAssemblies()
                 .FirstOrDefault(r => r.FullName == OwnApiName);
@@ -104,16 +102,22 @@ namespace TzspServer.Analyzers
             }
         }
 
-        private static void LoadOtherDllInTheSameDir(AssemblyLoadContext context, string mainAsmPath)
+        private static Assembly LoadMainDllWithDeps(AssemblyLoadContext context, string mainAsmPath)
         {
-            foreach (var dllPath in Directory.EnumerateFiles(Path.GetDirectoryName(mainAsmPath), "*.dll"))
+            using var stream = File.OpenRead(mainAsmPath);
+            var asm = context.LoadFromStream(stream);
+
+            var dirPath = Path.GetDirectoryName(mainAsmPath);
+            var refs = asm.GetReferencedAssemblies()
+                .Select(r => Path.Combine(dirPath, r.Name + ".dll"))
+                .Where(File.Exists);
+
+            foreach (var dllPath in refs)
             {
-                if (dllPath != mainAsmPath)
-                {
-                    using var stream = File.OpenRead(dllPath);
-                    context.LoadFromStream(stream);
-                }
+                using var depStream = File.OpenRead(dllPath);
+                context.LoadFromStream(depStream);
             }
+            return asm;
         }
     }
 }
