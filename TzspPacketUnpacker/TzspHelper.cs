@@ -1,7 +1,7 @@
 using System;
 using PacketDotNet;
 
-namespace TzspServer
+namespace TzspPacketUnpacker
 {
     public static class TzspHelper
     {
@@ -10,7 +10,7 @@ namespace TzspServer
         private const byte TagEnd = 1;
         private const int MinimumLength = 4;
 
-        public static (LinkLayers LinkLayer, int PacketOffset) Parse(byte[] bytes, int length)
+        public static PacketData Parse(byte[] bytes, int length)
         {
             if (length < MinimumLength)
                 throw new ArgumentException($"Packet length is < {MinimumLength}.");
@@ -62,11 +62,11 @@ namespace TzspServer
                         break;
 
                     case State.Packet:
-                            return (linkLayer, i);
+                            return new PacketData(linkLayer, new Span<byte>(bytes, i, bytes.Length - i));
                 }
             }
 
-            throw new Exception("Should never reach.");
+            throw new Exception("Invalid TZSP packet structure (missing bytes).");
         }
 
         private static LinkLayers GetLinkLayerFromProtocol(ushort protocol)
@@ -79,7 +79,7 @@ namespace TzspServer
             }
         }
 
-        private enum State : byte
+        private enum State
         {
             Version,
             Type,

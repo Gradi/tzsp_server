@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
-using Serilog;
 using TzspServerAnalyzerApi;
 using TzspServerAnalyzerApi.Attributes;
 
@@ -18,19 +17,6 @@ namespace TzspServer.Analyzers
 
         private AssemblyLoadContext _asmContext;
         private IReadOnlyCollection<IAnalyzer> _analyzers;
-
-        public ILogger Logger
-        {
-            get => throw new NotSupportedException();
-            set
-            {
-                if (_analyzers != null)
-                {
-                    foreach (var analyzer in _analyzers)
-                        analyzer.Logger = value;
-                }
-            }
-        }
 
         static PluggableAnalyzer()
         {
@@ -90,7 +76,6 @@ namespace TzspServer.Analyzers
         {
             try
             {
-                Logger = null;
                 foreach (var analyzer in _analyzers)
                     analyzer.Dispose();
             }

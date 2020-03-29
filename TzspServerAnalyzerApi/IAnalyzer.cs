@@ -1,5 +1,4 @@
 using System;
-using Serilog;
 
 namespace TzspServerAnalyzerApi
 {
@@ -8,11 +7,6 @@ namespace TzspServerAnalyzerApi
     /// </summary>
     public interface IAnalyzer : IDisposable
     {
-        /// <summary>
-        /// Logger instance. Will be set before first packet arrival.
-        /// </summary>
-        ILogger Logger { get; set; }
-
         /// <summary>
         /// Handles single data packet. Method is guaranteed
         /// to be called by one thread at the time.

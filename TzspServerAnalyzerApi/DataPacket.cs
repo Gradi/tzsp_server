@@ -13,7 +13,7 @@ namespace TzspServerAnalyzerApi
 
         public DateTime PacketArrivalTime { get; set; }
 
-        public byte[] RawPacket { get; set; }
+        public ReadOnlyMemory<byte> RawPacket { get; set; }
 
         public LinkLayers LinkLayer { get; set; }
 
@@ -23,7 +23,7 @@ namespace TzspServerAnalyzerApi
             {
                 if (!_isPacketParsed)
                 {
-                    _packet = Packet.ParsePacket(LinkLayer, RawPacket);
+                    _packet = Packet.ParsePacket(LinkLayer, RawPacket.ToArray());
                     _isPacketParsed = true;
                 }
                 return _packet;

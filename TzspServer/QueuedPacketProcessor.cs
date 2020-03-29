@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using PacketDotNet;
 using Serilog;
+using TzspPacketUnpacker;
 using TzspServerAnalyzerApi;
 using TzspServerAnalyzerApi.Extensions;
 
@@ -100,10 +101,11 @@ namespace TzspServer
         {
             LinkLayers linkLayer;
             int offset;
+            PacketData packetData;
             try
             {
-                (linkLayer, offset) = TzspHelper.Parse(packet.Data, packet.Length);
-                if ((packet.Length - offset) == 0)
+                packetData = TzspHelper.Parse(packet.Data, packet.Length);
+                if (packetData.Data.Length == 0)
                     throw new Exception("Packet has 0 length.");
             }
             catch(Exception exception)
@@ -113,14 +115,12 @@ namespace TzspServer
                 return;
             }
 
-            byte[] dataCopy = new byte[packet.Length - offset];
-            Array.Copy(packet.Data, offset, dataCopy, 0, packet.Length - offset);
             var dataPacket = new DataPacket
             {
                 PacketCounter = packet.Counter,
                 PacketArrivalTime = packet.PacketTime,
-                RawPacket = dataCopy,
-                LinkLayer = linkLayer,
+                RawPacket = packetData.Data.ToArray(),
+                LinkLayer = packetData.LinkLayer,
                 Data = new Dictionary<object, object>(),
             };
 

@@ -16,8 +16,6 @@ namespace TzspServer.Analyzers
         private System.Timers.Timer _timer;
         private bool _isDisposed;
 
-        public ILogger Logger { get; set; }
-
         public HotReloadAnalyzer(ILogger logger, string assemblyPath)
         {
             _logger = logger
@@ -30,7 +28,6 @@ namespace TzspServer.Analyzers
             _locker = new object();
             _lastModTime = File.GetLastWriteTime(assemblyPath);
             _currentAnalyzer = new PluggableAnalyzer(assemblyPath);
-            _currentAnalyzer.Logger = _logger;
             _isDisposed = false;
 
             _timer = new System.Timers.Timer(300);
@@ -89,7 +86,6 @@ namespace TzspServer.Analyzers
 
                     using var stream = File.OpenRead(_assemblyPath);
                     IAnalyzer newAnalyzer = new PluggableAnalyzer(_assemblyPath);
-                    newAnalyzer.Logger = _logger;
                     IAnalyzer oldAnalyzer = null;
 
                     lock (_locker)

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="CommandLineParser" Version="2.7.82" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
@@ -14,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TzspPacketUnpacker\TzspPacketUnpacker.csproj" />
     <ProjectReference Include="..\TzspServerAnalyzerApi\TzspServerAnalyzerApi.csproj" />
   </ItemGroup>
 
