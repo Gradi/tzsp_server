@@ -10,27 +10,27 @@ namespace TzspPacketUnpacker
         private const byte TagEnd = 1;
         private const int MinimumLength = 4;
 
-        public static PacketData Parse(byte[] bytes, int length)
+        public static PacketData Parse(ReadOnlySpan<byte> bytes)
         {
-            if (length < MinimumLength)
-                throw new ArgumentException($"Packet length is < {MinimumLength}.");
+            if (bytes.Length < MinimumLength)
+                throw new TzspUnpackException($"Packet length is < {MinimumLength}.");
 
             var state = State.Version;
             LinkLayers linkLayer = LinkLayers.Null;
 
-            for(int i = 0; i < length; ++i)
+            for(int i = 0; i < bytes.Length; ++i)
             {
                 switch (state)
                 {
                     case State.Version:
                         if (Version != bytes[i])
-                            throw new ArgumentException($"Version number mismatch. {Version} != {bytes[i]}.");
+                            throw new TzspUnpackException($"Version number mismatch. {Version} != {bytes[i]}.");
                         state = State.Type;
                         break;
 
                     case State.Type:
                         if (bytes[i] > 5)
-                            throw new ArgumentException($"Invalid type value {bytes[i]}.");
+                            throw new TzspUnpackException($"Invalid type value {bytes[i]}.");
                         state = State.Protocol;
                         break;
 
@@ -42,7 +42,7 @@ namespace TzspPacketUnpacker
                         break;
 
                     case State.TaggedFields:
-                        for (int j = i; j < length; )
+                        for (int j = i; j < bytes.Length; )
                         {
                             var type = bytes[j];
                             if (type == TagPadding)
@@ -62,11 +62,11 @@ namespace TzspPacketUnpacker
                         break;
 
                     case State.Packet:
-                            return new PacketData(linkLayer, new Span<byte>(bytes, i, bytes.Length - i));
+                            return new PacketData(linkLayer, bytes.Slice(i));
                 }
             }
 
-            throw new Exception("Invalid TZSP packet structure (missing bytes).");
+            throw new TzspUnpackException("Invalid TZSP packet structure (missing bytes).");
         }
 
         private static LinkLayers GetLinkLayerFromProtocol(ushort protocol)

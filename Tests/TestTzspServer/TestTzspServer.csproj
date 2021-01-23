@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +12,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TzspServer\TzspServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tests" />
   </ItemGroup>
 
 </Project>

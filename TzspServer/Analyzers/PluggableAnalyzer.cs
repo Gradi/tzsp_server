@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
+using System.Threading;
+using PacketDotNet;
 using TzspServerAnalyzerApi;
 using TzspServerAnalyzerApi.Attributes;
 
@@ -20,8 +22,8 @@ namespace TzspServer.Analyzers
 
         static PluggableAnalyzer()
         {
-            var asm = Assembly.GetAssembly(typeof(IAnalyzer));
-            OwnApiVersion = asm.GetName().Version;
+            var asm = Assembly.GetAssembly(typeof(IAnalyzer))!;
+            OwnApiVersion = asm.GetName().Version!;
             OwnApiName = asm.GetName().FullName;
         }
 
@@ -33,15 +35,27 @@ namespace TzspServer.Analyzers
             var refApiName = assembly.GetReferencedAssemblies()
                 .FirstOrDefault(r => r.FullName == OwnApiName);
             if (refApiName == null)
+            {
                 throw new ArgumentException($"Assembly {assembly.GetName()} doesn't seem to have refence to {OwnApiName}.");
+            }
             if (refApiName.Version != OwnApiVersion)
-                throw new ArgumentException($"Assembly {assembly.GetName()} references different version of api (My: {OwnApiVersion}, Plugin: {refApiName.Version}).");
+            {
+                throw new ArgumentException($"Assembly {assembly.GetName()} references different version of api " +
+                                            $"(My: {OwnApiVersion}, Plugin: {refApiName.Version}).");
+            }
 
             var analyzerTypes = assembly.GetCustomAttribute<AnalyzersOrderAttribute>()?.AnalyzerTypes;
             if (analyzerTypes == null || analyzerTypes.Count == 0)
-                throw new ArgumentException($"Assembly {assembly.GetName()} doesn't have {nameof(AnalyzersOrderAttribute)} or collection is empty.");
+            {
+                throw new ArgumentException($"Assembly {assembly.GetName()} doesn't have {nameof(AnalyzersOrderAttribute)} " +
+                                            $"or collection is empty.");
+            }
+
             if (analyzerTypes.Any(t => t.IsAbstract || !typeof(IAnalyzer).IsAssignableFrom(t)))
-                throw new ArgumentException($"Assembly's {nameof(AnalyzersOrderAttribute)} have entries that doesn't implement {nameof(IAnalyzer)} interface.");
+            {
+                throw new ArgumentException($"Assembly's {nameof(AnalyzersOrderAttribute)} have entries that doesn't " +
+                                            $"implement {nameof(IAnalyzer)} interface.");
+            }
 
             var analyzers = new IAnalyzer[analyzerTypes.Count];
             int index = 0;
@@ -49,7 +63,9 @@ namespace TzspServer.Analyzers
             {
                 try
                 {
-                    analyzers[index++] = (IAnalyzer)Activator.CreateInstance(type);
+                    analyzers[index++] = (IAnalyzer)(Activator.CreateInstance(type) ??
+                                                     throw new Exception($"{nameof(Activator)}.{nameof(Activator.CreateInstance)}" +
+                                                                         $"returned null."));
                 }
                 catch(Exception exception)
                 {
@@ -60,31 +76,46 @@ namespace TzspServer.Analyzers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public DataPacket Handle(DataPacket dataPacket)
+        public AResult Handle(LinkLayers linkLayers, Packet packet, object? context, CancellationToken cancellationToken)
         {
+            var lastResult = AResult.Continue();
             foreach (var analyzer in _analyzers)
             {
-                dataPacket = analyzer.Handle(dataPacket);
-                if (dataPacket == null)
-                    return null;
+                lastResult = analyzer.Handle(linkLayers, packet, context, cancellationToken);
+                if (!lastResult.IsContinue)
+                    return AResult.Stop();
+
+                if (lastResult.IsNewContext)
+                    context = lastResult.Context;
             }
-            return dataPacket;
+
+            // This way we don't leak third party assembly's
+            // context to outer world.
+            // But third party assembly can still capture
+            // outer world's context.
+            // So, is this worth it?
+            return lastResult.IsContinue ?
+                AResult.Continue() : AResult.Stop();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Dispose()
         {
-            try
+            foreach (var analyzer in _analyzers)
             {
-                foreach (var analyzer in _analyzers)
+                try
+                {
                     analyzer.Dispose();
+                }
+                catch
+                {
+                    /* Intentionally left empty. */
+                }
             }
-            finally
-            {
-                _analyzers = null;
-                _asmContext?.Unload();
-                _asmContext = null;
-            }
+
+            _analyzers = null!;
+            _asmContext.Unload();
+            _asmContext = null!;
         }
 
         private static Assembly LoadMainDllWithDeps(AssemblyLoadContext context, string mainAsmPath)
@@ -92,7 +123,7 @@ namespace TzspServer.Analyzers
             using var stream = File.OpenRead(mainAsmPath);
             var asm = context.LoadFromStream(stream);
 
-            var dirPath = Path.GetDirectoryName(mainAsmPath);
+            var dirPath = Path.GetDirectoryName(mainAsmPath)!;
             var refs = asm.GetReferencedAssemblies()
                 .Select(r => Path.Combine(dirPath, r.Name + ".dll"))
                 .Where(File.Exists);

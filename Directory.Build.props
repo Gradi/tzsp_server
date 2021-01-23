@@ -3,11 +3,13 @@
   <PropertyGroup>
     <LangVersion>preview</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>CS1591;$(NoWarn)</NoWarn>
+    <NoWarn>CS1591;CS1573;$(NoWarn)</NoWarn>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PacketDotNet" Version="1.0.4" />
+    <PackageReference Include="PacketDotNet" Version="1.1.2" />
   </ItemGroup>
 
 </Project>

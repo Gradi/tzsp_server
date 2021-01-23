@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <Version>0.0.1</Version>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>preview</LangVersion>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 

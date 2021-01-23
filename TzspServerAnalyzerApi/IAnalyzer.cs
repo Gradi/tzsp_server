@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using PacketDotNet;
 
 namespace TzspServerAnalyzerApi
 {
@@ -8,10 +10,14 @@ namespace TzspServerAnalyzerApi
     public interface IAnalyzer : IDisposable
     {
         /// <summary>
-        /// Handles single data packet. Method is guaranteed
-        /// to be called by one thread at the time.
+        /// Analyzes current packet. This method is guaranteed
+        /// to be called from single thread at the time.
         /// </summary>
-        /// <returns><see cref="DataPacket"/> instance. You may create a new one. Return null to short-circuit chain.</returns>
-        DataPacket Handle(DataPacket dataPacket);
+        /// <param name="linkLayers">Link layer of current packet.</param>
+        /// <param name="packet">Current network packet.</param>
+        /// <param name="context">(Optionally) Context from any previous analyzers.</param>
+        /// <returns>Result indicating if we must pass packet to next analyzers in chain or not.</returns>
+        AResult Handle(LinkLayers linkLayers, Packet packet, object? context, CancellationToken cancellationToken);
     }
+
 }
